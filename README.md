@@ -11,6 +11,7 @@ The app is meant to be a first guess at what a fare share of rent would be. It d
 ### Python app: 
 <img width="407" alt="python_app" src="https://github.com/user-attachments/assets/a1173160-cc77-4a47-8250-dd705159a4f1">
 
+Python app using tkinter for interactions. 
 
 ### Web app (with python backend):
 <img width="513" alt="web_app" src="https://github.com/user-attachments/assets/b28da5a1-09f0-4b8f-9c95-c319bc8b0f5a">
