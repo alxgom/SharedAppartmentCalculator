@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Rent Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Room Rent Calculator</h1>
+        <form id="rent-form">
+            <label for="rent">Rental price:</label>
+            <input type="number" id="rent" name="rent" required>
+
+            <label for="num_rooms">Number of rooms:</label>
+            <input type="number" id="num_rooms" name="num_rooms" required>
+
+            <div id="room-dimensions">
+                <label>Dimensions of room 1 (comma separated):</label>
+                <input type="text" name="room_dimensions" required>
+            </div>
+
+            <label for="bills">Bills per month (optional):</label>
+            <input type="number" id="bills" name="bills">
+
+            <button type="button" onclick="addRoom()">Add Room</button>
+            <button type="submit">Calculate</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>let roomCount = 1;
+
+        function addRoom() {
+            roomCount++;
+            const roomDiv = document.createElement('div');
+            roomDiv.innerHTML = `
+                <label>Dimensions of room ${roomCount} (comma separated):</label>
+                <input type="text" name="room_dimensions" required>
+            `;
+            document.getElementById('room-dimensions').appendChild(roomDiv);
+        }
+
+        document.getElementById('rent-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                rent: formData.get('rent'),
+                num_rooms: formData.get('num_rooms'),
+                room_dimensions: Array.from(formData.getAll('room_dimensions')),
+                bills: formData.get('bills')
+            };
+
+            fetch('/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+                result.forEach((rent, index) => {
+                    resultDiv.innerHTML += `<p>Room ${index + 1} should pay ${rent} in rent${data.bills ? ' and bills' : ''}.</p>`;
+                });
+            });
+        });</script>
+</body>
+</html>
