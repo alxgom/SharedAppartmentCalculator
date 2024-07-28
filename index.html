@@ -29,6 +29,12 @@
             flex-direction: column;
         }
 
+        .inline-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         label {
             margin-top: 10px;
         }
@@ -51,8 +57,18 @@
             background-color: #0056b3;
         }
 
+        .room-dimensions {
+            display: flex;
+            gap: 10px;
+        }
+
         #result {
             margin-top: 20px;
+        }
+
+        #warning {
+            color: red;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -60,53 +76,94 @@
     <div class="container">
         <h1>Room Rent Calculator</h1>
         <form id="rent-form">
-            <label for="rent">Rental price:</label>
-            <input type="number" id="rent" name="rent" required>
+            <div class="inline-inputs">
+                <div>
+                    <label for="rent">Rental price:</label>
+                    <input type="number" id="rent" name="rent" required>
+                </div>
+                <div>
+                    <label for="total_area">Total area of the apartment (sq. ft):</label>
+                    <input type="number" id="total_area" name="total_area" required>
+                </div>
+                <div id="price-per-unit-area"></div>
+            </div>
             
             <label for="num_rooms">Number of rooms:</label>
             <input type="number" id="num_rooms" name="num_rooms" required>
-            
-            <div id="room-dimensions">
-                <label>Dimensions of room 1 (comma separated):</label>
-                <input type="text" name="room_dimensions" required>
-            </div>
-            
+
+            <div id="room-dimensions-container"></div>
+
             <label for="bills">Bills per month (optional):</label>
             <input type="number" id="bills" name="bills">
 
-            <button type="button" onclick="addRoom()">Add Room</button>
             <button type="submit">Calculate</button>
         </form>
 
+        <div id="warning"></div>
         <div id="result"></div>
     </div>
 
     <script>
-        let roomCount = 1;
+        document.getElementById('rent').addEventListener('input', updatePricePerUnitArea);
+        document.getElementById('total_area').addEventListener('input', updatePricePerUnitArea);
 
-        function addRoom() {
-            roomCount++;
-            const roomDiv = document.createElement('div');
-            roomDiv.innerHTML = `
-                <label>Dimensions of room ${roomCount} (comma separated):</label>
-                <input type="text" name="room_dimensions" required>
-            `;
-            document.getElementById('room-dimensions').appendChild(roomDiv);
+        function updatePricePerUnitArea() {
+            const rent = parseFloat(document.getElementById('rent').value);
+            const totalArea = parseFloat(document.getElementById('total_area').value);
+            const pricePerUnitAreaDiv = document.getElementById('price-per-unit-area');
+
+            if (!isNaN(rent) && !isNaN(totalArea) && totalArea > 0) {
+                const pricePerUnitArea = (rent / totalArea).toFixed(2);
+                pricePerUnitAreaDiv.innerHTML = `Price per unit area: ${pricePerUnitArea}`;
+            } else {
+                pricePerUnitAreaDiv.innerHTML = '';
+            }
         }
+
+        document.getElementById('num_rooms').addEventListener('input', function() {
+            const numRooms = parseInt(this.value);
+            const roomDimensionsContainer = document.getElementById('room-dimensions-container');
+            roomDimensionsContainer.innerHTML = '';
+
+            for (let i = 1; i <= numRooms; i++) {
+                const roomDiv = document.createElement('div');
+                roomDiv.classList.add('room-dimension');
+                roomDiv.innerHTML = `
+                    <label>Dimensions of room ${i}:</label>
+                    <div class="room-dimensions">
+                        <input type="number" name="room_width" placeholder="Width" required>
+                        <input type="number" name="room_length" placeholder="Length" required>
+                    </div>
+                `;
+                roomDimensionsContainer.appendChild(roomDiv);
+            }
+        });
 
         document.getElementById('rent-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
             const rent = parseFloat(formData.get('rent'));
+            const totalArea = parseFloat(formData.get('total_area'));
             const numRooms = parseInt(formData.get('num_rooms'));
-            const roomDimensions = Array.from(formData.getAll('room_dimensions')).map(dims => dims.split(',').map(Number));
+            const roomWidths = formData.getAll('room_width').map(Number);
+            const roomLengths = formData.getAll('room_length').map(Number);
+            const roomDimensions = roomWidths.map((width, index) => [width, roomLengths[index]]);
             const bills = formData.get('bills') ? parseFloat(formData.get('bills')) : null;
 
-            const roomAreas = roomDimensions.map(dimension => dimension.reduce((a, b) => a * b, 1));
-            const totalArea = roomAreas.reduce((a, b) => a + b, 0);
+            const roomAreas = roomDimensions.map(dimension => dimension[0] * dimension[1]);
+            const totalRoomArea = roomAreas.reduce((a, b) => a + b, 0);
+
+            const warningDiv = document.getElementById('warning');
+            if (totalRoomArea > totalArea) {
+                warningDiv.innerHTML = `Warning: Total area of the rooms (${totalRoomArea}) is greater than the total area of the apartment (${totalArea}).`;
+                return;
+            } else {
+                warningDiv.innerHTML = '';
+            }
+
             const rentPerArea = rent / totalArea;
             const rentPerRoom = roomAreas.map(area => parseFloat((area * rentPerArea).toFixed(2)));
-            
+
             const totalRentPerRoom = bills !== null ? 
                 rentPerRoom.map(rentRoom => parseFloat((rentRoom + bills / numRooms).toFixed(2))) :
                 rentPerRoom;
