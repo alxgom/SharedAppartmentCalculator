@@ -6,17 +6,11 @@ It is also possible to add extra shared taxes like intenet or council tax to the
 The app is meant to be a first guess at what a fare share of rent would be. It doesn't take into account features like insuite bathrooms, balcony, etc.. 
 
 
-## Examples: 
+## Examples: Web app 
 
-### Python app (discontinuated): 
-<img width="407" alt="python_app" src="https://github.com/user-attachments/assets/a1173160-cc77-4a47-8250-dd705159a4f1">
+Pure HTML and java app
 
-Python app using tkinter for interactions. 
-
-### Web app: 
-
-Pure HTML and java app 
-<img width="513" alt="web_app" src="https://github.com/user-attachments/assets/b28da5a1-09f0-4b8f-9c95-c319bc8b0f5a">
+<img width="496" alt="web_app" src="https://github.com/user-attachments/assets/73756b1c-3f20-4ef0-b353-2ad82970a955">
 
 It is possible to input the total area of the appartment, and to assign the importance of the shared spaces in the division of rent. 
 
